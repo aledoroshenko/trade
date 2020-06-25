@@ -5,29 +5,13 @@
     </div>
     <div>
       <h2>Available ISINs</h2>
-      <div v-for="isin in availableIsins" :key="isin">
-        <p>
-          {{ isin }}
-          <button :disabled="isButtonDisabled" @click="subscribe(isin)">
-            {{
-              subscribedIsins &&
-              subscribedIsins[isin] &&
-              subscribedIsins[isin].subscriptionAlive
-                ? "Subscribed"
-                : "Subscribe"
-            }}
-          </button>
-          <button :disabled="isButtonDisabled" @click="unsubscribe(isin)">
-            Unsubscribe
-          </button>
-          <button
-            :disabled="isButtonDisabled"
-            @click="removeSubscription(isin)"
-          >
-            Remove
-          </button>
-        </p>
-      </div>
+      <subscription-toolbar
+        :isins="availableIsins"
+        :activeSubscriptions="activeSubscriptions"
+        @subscribe="onSubscribe"
+        @unsubscribe="onUnsubscribe"
+        @remove="onRemove"
+      />
     </div>
 
     <div>
@@ -38,7 +22,7 @@
       <div v-else>
         <div v-for="isin in subscribedIsins" :key="isin.isin">
           <div v-if="isin.price === null">
-            {{ isin.isin }}: loading prices...
+            {{ isin.isin }}: connecting to market...
           </div>
           <div v-else :class="{ active: isin.subscriptionAlive }">
             {{ isin.isin }}: {{ isin.price }}
@@ -50,8 +34,11 @@
 </template>
 
 <script>
+import SubscriptionToolbar from "./components/SubscriptionToolbar";
+
 export default {
   name: "App",
+  components: { SubscriptionToolbar },
   data: function() {
     return {
       websocket: null,
@@ -61,15 +48,16 @@ export default {
     };
   },
   computed: {
-    isButtonDisabled() {
-      return this.socketStatus !== "CONNECTED";
-    }
+    // isButtonDisabled: function(isin) {
+    //   return this.socketStatus !== "CONNECTED";
+    // }
+    activeSubscriptions: []
   },
   mounted: function() {
     this.connect();
   },
   methods: {
-    subscribe(isin) {
+    onSubscribe(isin) {
       if (this.websocket.readyState !== 1) {
         return console.log("Cant subscribe");
       }
@@ -92,7 +80,7 @@ export default {
         }
       };
     },
-    unsubscribe(isin) {
+    onUnsubscribe(isin) {
       this.websocket.send(
         JSON.stringify({
           event: "events",
@@ -134,7 +122,7 @@ export default {
         ...priceData
       };
     },
-    removeSubscription(isin) {
+    onRemove(isin) {
       const temp = { ...this.subscribedIsins };
       delete temp[isin];
       this.subscribedIsins = { ...temp };
