@@ -1,4 +1,4 @@
-# trade
+# Trade
 
 ## Project setup
 ```
