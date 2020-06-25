@@ -1,23 +1,28 @@
 <template>
-  <div>
-    <div v-for="isin in isins" :key="isin">
-      <p>
-        {{ isin }}
-        <button :disabled="isButtonDisabled" @click="$emit('subscribe', isin)">
-          Subscribe
-        </button>
-        <button
-          :disabled="isButtonDisabled"
-          @click="$emit('unsubscribe', isin)"
-        >
-          Unsubscribe
-        </button>
-        <button :disabled="isButtonDisabled" @click="$emit('remove', isin)">
-          Remove
-        </button>
-      </p>
-    </div>
-  </div>
+  <v-row>
+    <v-col col-12>
+      <div class="isin-wrapper" v-for="isin in isins" :key="isin">
+        <div class="isin-label">{{ isin }}</div>
+        <div class="buttons-wrapper">
+          <div class="mx-2">
+            <v-btn
+              v-if="isActive(isin)"
+              x-small
+              color="success"
+              @click="$emit('unsubscribe', isin)"
+              >Unsubscribe</v-btn
+            >
+            <v-btn v-else x-small @click="$emit('subscribe', isin)"
+              >Subscribe</v-btn
+            >
+          </div>
+          <div class="mx-2">
+            <v-btn x-small @click="$emit('remove', isin)">Remove</v-btn>
+          </div>
+        </div>
+      </div>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -28,6 +33,27 @@ export default {
     isButtonDisabled() {
       return false;
     }
+  },
+  methods: {
+    isActive(isin) {
+      debugger;
+      return this.activeSubscriptions.includes(isin);
+    }
   }
 };
 </script>
+
+<style>
+.isin-wrapper {
+  display: flex;
+  margin-bottom: 40px;
+}
+
+.isin-label {
+  width: 140px;
+}
+
+.buttons-wrapper {
+  display: flex;
+}
+</style>
