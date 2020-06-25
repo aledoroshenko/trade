@@ -1,84 +1,74 @@
 <template>
   <v-app>
     <v-main class="grey lighten-5">
-      <v-container class="white">
-        <v-row>
-          <v-col>
-            <v-row>
-              <v-col v-if="socketStatus === 'CLOSED'">
-                <v-alert type="error">
-                  Connection unavailable
-                </v-alert>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <h1>ISINs</h1>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col>
-                <h3>Available</h3>
+      <v-alert v-if="socketStatus !== 'CONNECTED'" type="error">
+        Connection unavailable
+      </v-alert>
+      <v-card class="mx-auto card-wrapper" max-width="400" outlined
+        ><v-card-text>
+          <v-row
+            ><v-col><h1>Assets</h1></v-col></v-row
+          >
+          <v-row>
+            <v-col>
+              <h3>Available</h3>
 
-                <subscription-toolbar
-                  :isins="availableIsins"
-                  :activeSubscriptions="activeSubscriptions"
-                  @subscribe="onSubscribe"
-                  @unsubscribe="onUnsubscribe"
-                  @remove="onRemove"
-                />
-              </v-col>
-            </v-row>
+              <subscription-toolbar
+                :isins="availableIsins"
+                :activeSubscriptions="activeSubscriptions"
+                @subscribe="onSubscribe"
+                @unsubscribe="onUnsubscribe"
+                @remove="onRemove"
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12">
+              <h3>Subscribed</h3>
 
-            <v-row>
-              <v-col cols="12" sm="8" md="4">
-                <h3>Subscribed</h3>
-                <p>Active subscriptions highlighted green</p>
+              <div v-if="subscribedIsins === null">
+                No subscriptions
+              </div>
 
-                <div v-if="subscribedIsins === null">
-                  No subscriptions
-                </div>
+              <div v-else>
+                <v-simple-table>
+                  <template v-slot:default>
+                    <thead>
+                      <tr>
+                        <th class="text-left">ISIN</th>
+                        <th class="text-left">Price</th>
+                        <th class="text-left">Bid price</th>
+                        <th class="text-left">Ask price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="isin in subscribedIsins"
+                        :key="isin.name"
+                        :class="{
+                          subscriptionAlive: isin.subscriptionAlive
+                        }"
+                      >
+                        <template v-if="isin.price === null">
+                          <td>{{ isin.isin }}</td>
+                          <td colspan="3">connecting to market...</td>
+                        </template>
 
-                <div v-else>
-                  <v-simple-table>
-                    <template v-slot:default>
-                      <thead>
-                        <tr>
-                          <th class="text-left">ISIN</th>
-                          <th class="text-left">Price</th>
-                          <th class="text-left">Bid price</th>
-                          <th class="text-left">Ask price</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="isin in subscribedIsins"
-                          :key="isin.name"
-                          :class="{
-                            subscriptionAlive: isin.subscriptionAlive
-                          }"
-                        >
-                          <template v-if="isin.price === null">
-                            <td>{{ isin.isin }}</td>
-                            <td colspan="3">connecting to market...</td>
-                          </template>
-
-                          <template v-else>
-                            <td>{{ isin.isin }}</td>
-                            <td>{{ isin.price }}</td>
-                            <td>{{ isin.price }}</td>
-                            <td>{{ isin.price }}</td>
-                          </template>
-                        </tr>
-                      </tbody>
-                    </template>
-                  </v-simple-table>
-                </div>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-container>
+                        <template v-else>
+                          <td>{{ isin.isin }}</td>
+                          <td>{{ isin.price }}</td>
+                          <td>{{ isin.price }}</td>
+                          <td>{{ isin.price }}</td>
+                        </template>
+                      </tr>
+                    </tbody>
+                  </template>
+                </v-simple-table>
+              </div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
     </v-main>
   </v-app>
 </template>
@@ -164,7 +154,7 @@ export default {
       this.websocket.onclose = this.close;
     },
     open(event) {
-      console.log(event);
+      console.log("Websocket open", event);
       console.log("Successfully connected to the server");
       this.socketStatus = "CONNECTED";
 
@@ -176,7 +166,7 @@ export default {
       }
     },
     close(event) {
-      console.log(event);
+      console.log("Websocket close", event);
       this.socketStatus = "CLOSED";
 
       this.needResubscribe = true;
@@ -187,7 +177,7 @@ export default {
       }, 2000);
     },
     error(event) {
-      console.log(event);
+      console.log("Websocket error", event);
       this.socketStatus = "ERROR";
     },
     message({ data }) {
@@ -210,5 +200,9 @@ export default {
 <style>
 .subscriptionAlive td {
   color: green;
+}
+
+.card-wrapper {
+  margin-top: 40px;
 }
 </style>

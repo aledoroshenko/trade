@@ -29,11 +29,7 @@
 export default {
   name: "SubscriptionToolbar",
   props: ["isins", "activeSubscriptions"],
-  computed: {
-    isButtonDisabled() {
-      return false;
-    }
-  },
+  computed: {},
   methods: {
     isActive(isin) {
       debugger;
@@ -46,11 +42,11 @@ export default {
 <style>
 .isin-wrapper {
   display: flex;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 
 .isin-label {
-  width: 140px;
+  width: 120px;
 }
 
 .buttons-wrapper {
